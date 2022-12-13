@@ -63,6 +63,35 @@ fn main() {
         println!("{:?}", &w);
     }
 
+    let mut part1_crane = port.clone();
+    move_crates(instructions, &mut part1_crane, true);
+    let part_1 = get_result(&cols, &part1_crane);
+
+    let mut part2_crane = port.clone();
+    move_crates(instructions, &mut part2_crane, false);
+    let part_2 = get_result(&cols, &part2_crane);
+
+    println!("part 1: {:?}", part_1);
+    println!("part 2: {:?}", part_2);
+}
+
+fn get_result(columns: &Vec<&str>, crane: &HashMap<&str, Vec<String>>) -> String {
+    let mut result = vec![];
+    for col in columns {
+        result.push(
+            crane
+                .get(col)
+                .unwrap()
+                .last()
+                .unwrap_or(&"".to_string())
+                .to_string(),
+        )
+    }
+
+    result.join("")
+}
+
+fn move_crates(instructions: &Vec<&str>, crane: &mut HashMap<&str, Vec<String>>, reverse: bool) {
     for w in instructions.windows(3).step_by(3) {
         let mov = w[0];
         let from = w[1];
@@ -70,7 +99,7 @@ fn main() {
 
         println!("{:?}", w);
 
-        let container = port.get_mut(from).unwrap();
+        let container = crane.get_mut(from).unwrap();
         println!(
             "subtracting {} from {}",
             mov.parse::<usize>().unwrap(),
@@ -80,27 +109,16 @@ fn main() {
             .len()
             .saturating_sub(mov.parse::<usize>().unwrap());
         let mut moved = container.split_off(split_at);
-        moved.reverse();
+        if reverse {
+            moved.reverse();
+        }
         println!(
             "split_at: {} {:?} splitting off: {:?}",
             split_at, container, moved
         );
-        if let Some(other_container) = port.get_mut(to) {
+        if let Some(other_container) = crane.get_mut(to) {
             other_container.append(&mut moved);
             println!("added to: {:?}", other_container);
         }
     }
-
-    let mut result = vec![];
-    for col in &cols {
-        result.push(
-            port.get(col)
-                .unwrap()
-                .last()
-                .unwrap_or(&"".to_string())
-                .to_string(),
-        )
-    }
-
-    println!("part 1: {:?}", result.join(""))
 }
